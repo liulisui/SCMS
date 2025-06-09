@@ -1,0 +1,581 @@
+<!-- filepath: c:\code\javaweb\SCMS\src\main\webapp\user\history.jsp -->
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page import="java.util.List" %>
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>查询预约记录 - 校园通行码预约管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8fafc;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .search-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            border: 1px solid #e2e8f0;
+            margin-bottom: 2rem;
+        }
+
+        .search-title {
+            font-size: 1.25rem;
+            color: #1a202c;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .search-subtitle {
+            color: #64748b;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .search-form {
+            display: grid;
+            grid-template-columns: 2fr 1fr auto;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .required {
+            color: #ef4444;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            height: fit-content;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .results-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            border: 1px solid #e2e8f0;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .results-title {
+            font-size: 1.25rem;
+            color: #1a202c;
+        }
+
+        .results-count {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .reservation-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .reservation-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .reservation-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+
+        .reservation-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .reservation-card.pending::before {
+            background: #fbbf24;
+        }
+
+        .reservation-card.approved::before {
+            background: #10b981;
+        }
+
+        .reservation-card.rejected::before {
+            background: #ef4444;
+        }
+
+        .reservation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .reservation-id {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 0.9rem;
+        }
+
+        .reservation-type {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .type-public {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .type-official {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .reservation-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .info-label {
+            color: #64748b;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: #1e293b;
+            font-weight: 500;
+        }
+
+        .reservation-actions {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border-color: #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #64748b;
+        }
+
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 1rem;
+            color: #374151;
+        }
+
+        .empty-state p {
+            margin-bottom: 2rem;
+        }
+
+        .new-reservation-btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .new-reservation-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .alert-info {
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+        }
+
+        .alert-error {
+            background: #fee;
+            color: #c33;
+            border: 1px solid #fcc;
+        }
+
+        @media (max-width: 768px) {
+            .search-form {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .search-btn {
+                justify-self: stretch;
+            }
+
+            .reservation-info {
+                grid-template-columns: 1fr;
+            }
+
+            .reservation-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .reservation-actions {
+                justify-content: stretch;
+                flex-direction: column;
+            }
+
+            .container {
+                padding: 0 1rem;
+            }
+
+            .header-content {
+                padding: 0 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-content">
+            <h1>查询预约记录</h1>
+            <a href="${pageContext.request.contextPath}/index.jsp" class="back-btn">返回首页</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="search-card">
+            <h2 class="search-title">预约记录查询</h2>
+            <p class="search-subtitle">请输入您的身份证号查询预约记录（无需登录账户）</p>
+
+            <% if (request.getAttribute("error") !=null) { %>
+                <div class="alert alert-error">
+                    <%= request.getAttribute("error") %>
+                </div>
+                <% } %>
+
+                    <form method="get" action="${pageContext.request.contextPath}/history" class="search-form">
+                        <div class="form-group">
+                            <label for="idCard">身份证号 <span class="required">*</span></label>
+                            <input type="text" id="idCard" name="idCard" maxlength="18" placeholder="请输入18位身份证号"
+                                value="<%= request.getParameter("idCard") !=null ?
+                                request.getParameter("idCard") : "" %>"
+                            required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="type">预约类型</label>
+                            <select id="type" name="type">
+                                <option value="">全部类型</option>
+                                <option value="public" <%="public".equals(request.getParameter("type"))
+                                    ? "selected" : "" %>>校园参观</option>
+                                <option value="official" <%="official".equals(request.getParameter("type"))
+                                    ? "selected" : "" %>>公务来访</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="search-btn">🔍 查询记录</button>
+                    </form>
+        </div>
+
+        <% List<?> reservations = (List<?>) request.getAttribute("reservations");
+           String searchIdCard = request.getParameter("idCard");
+        %>
+
+        <% if (searchIdCard != null && !searchIdCard.trim().isEmpty()) { %>
+            <div class="results-section">
+                <div class="results-header">
+                    <h2 class="results-title">查询结果</h2>
+                    <span class="results-count">
+                        共找到 <%= reservations != null ? reservations.size() : 0 %> 条记录
+                    </span>
+                </div>
+
+                <% if (reservations != null && !reservations.isEmpty()) { %>
+                    <div class="reservation-grid">
+                        <% for (Object reservationObj : reservations) { 
+                            // 需要根据实际的ReservationHistoryItem类结构来处理
+                            // 这里先显示基本结构，实际开发中需要调整
+                        %>
+                            <div class="reservation-card pending">
+                                <div class="reservation-header">
+                                    <div class="reservation-id">预约编号：RES-<%= System.currentTimeMillis() %></div>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <span class="reservation-type type-public">校园参观</span>
+                                        <span class="status-badge status-pending">待审核</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="reservation-info">
+                                    <div class="info-item">
+                                        <span class="info-label">申请人</span>
+                                        <span class="info-value">访客姓名</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">联系电话</span>
+                                        <span class="info-value">联系电话</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">预约校区</span>
+                                        <span class="info-value">预约校区</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">访问时间</span>
+                                        <span class="info-value">访问时间</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">目的地</span>
+                                        <span class="info-value">目的地</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">申请时间</span>
+                                        <span class="info-value">申请时间</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="reservation-actions">
+                                    <a href="${pageContext.request.contextPath}/passcode?id=123" class="action-btn btn-primary">查看通行码</a>
+                                    <a href="${pageContext.request.contextPath}/reservation-result?id=123" class="action-btn btn-secondary">查看详情</a>
+                                </div>
+                            </div>
+                        <% } %>
+                    </div>
+                <% } else { %>
+                    <div class="empty-state">
+                        <div class="icon">📝</div>
+                        <h3>未找到预约记录</h3>
+                        <p>该身份证号暂无预约记录，您可以创建新的预约申请</p>
+                        <a href="${pageContext.request.contextPath}/user/reservation.jsp" class="new-reservation-btn">
+                            ➕ 新建预约
+                        </a>
+                    </div>
+                <% } %>
+            </div>
+        <% } else { %>
+            <div class="alert alert-info">
+                <strong>📋 使用说明：</strong>
+                <br>• 输入您的18位身份证号即可查询所有预约记录
+                <br>• 支持查询校园参观和公务来访两种预约类型
+                <br>• 无需注册账户，使用身份证号即可查询和管理预约
+                <br>• 系统会保留您的历史预约记录，方便随时查询
+            </div>
+        <% } %>
+    </div>
+
+    <script>
+        // 身份证号码格式验证
+        document.getElementById('idCard').addEventListener('input', function () {
+            const idCard = this.value;
+            if (idCard.length === 18) {
+                const pattern = /^[1-9]\d{5}(18|19|20)\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/;
+                if (!pattern.test(idCard)) {
+                    this.setCustomValidity('请输入正确的18位身份证号码');
+                } else {
+                    this.setCustomValidity('');
+                }
+            }
+        });
+
+        // 自动格式化身份证号码输入
+        document.getElementById('idCard').addEventListener('keypress', function (e) {
+            // 只允许输入数字和X
+            const char = String.fromCharCode(e.which);
+            const isValid = /[0-9Xx]/.test(char);
+            if (!isValid) {
+                e.preventDefault();
+            }
+        });
+
+        // 防止连续提交
+        document.querySelector('.search-form').addEventListener('submit', function (e) {
+            const submitBtn = document.querySelector('.search-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '查询中...';
+
+            // 如果验证失败，重新启用按钮
+            setTimeout(() => {
+                if (!this.checkValidity()) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '🔍 查询记录';
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>
